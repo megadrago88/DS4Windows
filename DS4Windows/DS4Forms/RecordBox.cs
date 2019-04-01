@@ -1225,7 +1225,7 @@ namespace DS4Windows
 
         private void lVMacros_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            if (lVMacros.SelectedIndices[0] >= 0)
+            if (lVMacros.SelectedIndices.Count != 0)
             {
                 if (lVMacros.SelectedItems[0].ImageIndex == 2)
                 {
@@ -1356,11 +1356,10 @@ namespace DS4Windows
             cHMacro.AutoResize(ColumnHeaderAutoResizeStyle.HeaderSize);
         }
 
-        private void advColorDialog_OnUpdateColor(object sender, EventArgs e)
+        private void advColorDialog_OnUpdateColor(Color color, EventArgs e)
         {
-            if (sender is Color && Program.rootHub.DS4Controllers[0] != null)
+            if (Program.rootHub.DS4Controllers[0] != null)
             {
-                Color color = (Color)sender;
                 DS4Color dcolor = new DS4Color { red = color.R, green = color.G, blue = color.B };
                 DS4LightBar.forcedColor[0] = dcolor;
                 DS4LightBar.forcedFlash[0] = 0;

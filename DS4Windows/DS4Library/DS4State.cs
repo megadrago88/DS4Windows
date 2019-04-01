@@ -4,10 +4,11 @@ namespace DS4Windows
 {
     public class DS4State
     {
+        public uint PacketCounter;
         public DateTime ReportTimeStamp;
         public bool Square, Triangle, Circle, Cross;
         public bool DpadUp, DpadDown, DpadLeft, DpadRight;
-        public bool L1, L3, R1, R3;
+        public bool L1, L2Btn, L3, R1, R2Btn, R3;
         public bool Share, Options, PS, Touch1, Touch2, TouchButton, TouchRight,
             TouchLeft, Touch1Finger, Touch2Fingers;
         public byte Touch1Identifier, Touch2Identifier;
@@ -24,17 +25,31 @@ namespace DS4Windows
         public double RXUnit;
         public double RYUnit;
         public double elapsedTime = 0.0;
+        public ulong totalMicroSec = 0;
         public SixAxis Motion = null;
         public static readonly int DEFAULT_AXISDIR_VALUE = 127;
+        public Int32 SASteeringWheelEmulationUnit;
+
+        public struct TrackPadTouch
+        {
+            public bool IsActive;
+            public byte Id;
+            public short X;
+            public short Y;
+        }
+
+        public TrackPadTouch TrackPadTouch0;
+        public TrackPadTouch TrackPadTouch1;
 
         public DS4State()
         {
+            PacketCounter = 0;
             Square = Triangle = Circle = Cross = false;
             DpadUp = DpadDown = DpadLeft = DpadRight = false;
-            L1 = L3 = R1 = R3 = false;
+            L1 = L2Btn = L3 = R1 = R2Btn = R3 = false;
             Share = Options = PS = Touch1 = Touch2 = TouchButton = TouchRight = TouchLeft = false;
             Touch1Finger = Touch2Fingers = false;
-            LX = RX = LY = RY = 127;
+            LX = RX = LY = RY = 128;
             L2 = R2 = 0;
             FrameCounter = 255; // only actually has 6 bits, so this is a null indicator
             TouchPacketCounter = 255; // 8 bits, no great junk value
@@ -48,11 +63,16 @@ namespace DS4Windows
             RXUnit = 0.0;
             RYUnit = 0.0;
             elapsedTime = 0.0;
+            totalMicroSec = 0;
             Motion = new SixAxis(0, 0, 0, 0, 0, 0, 0.0);
+            TrackPadTouch0.IsActive = false;
+            TrackPadTouch1.IsActive = false;
+            SASteeringWheelEmulationUnit = 0;
         }
 
         public DS4State(DS4State state)
         {
+            PacketCounter = state.PacketCounter;
             ReportTimeStamp = state.ReportTimeStamp;
             Square = state.Square;
             Triangle = state.Triangle;
@@ -64,9 +84,11 @@ namespace DS4Windows
             DpadRight = state.DpadRight;
             L1 = state.L1;
             L2 = state.L2;
+            L2Btn = state.L2Btn;
             L3 = state.L3;
             R1 = state.R1;
             R2 = state.R2;
+            R2Btn = state.R2Btn;
             R3 = state.R3;
             Share = state.Share;
             Options = state.Options;
@@ -96,7 +118,11 @@ namespace DS4Windows
             RXUnit = state.RXUnit;
             RYUnit = state.RYUnit;
             elapsedTime = state.elapsedTime;
+            totalMicroSec = state.totalMicroSec;
             Motion = state.Motion;
+            TrackPadTouch0 = state.TrackPadTouch0;
+            TrackPadTouch1 = state.TrackPadTouch1;
+            SASteeringWheelEmulationUnit = state.SASteeringWheelEmulationUnit;
         }
 
         public DS4State Clone()
@@ -106,6 +132,7 @@ namespace DS4Windows
 
         public void CopyTo(DS4State state)
         {
+            state.PacketCounter = PacketCounter;
             state.ReportTimeStamp = ReportTimeStamp;
             state.Square = Square;
             state.Triangle = Triangle;
@@ -117,9 +144,11 @@ namespace DS4Windows
             state.DpadRight = DpadRight;
             state.L1 = L1;
             state.L2 = L2;
+            state.L2Btn = L2Btn;
             state.L3 = L3;
             state.R1 = R1;
             state.R2 = R2;
+            state.R2Btn = R2Btn;
             state.R3 = R3;
             state.Share = Share;
             state.Options = Options;
@@ -149,19 +178,23 @@ namespace DS4Windows
             state.RXUnit = RXUnit;
             state.RYUnit = RYUnit;
             state.elapsedTime = elapsedTime;
+            state.totalMicroSec = totalMicroSec;
             state.Motion = Motion;
+            state.TrackPadTouch0 = TrackPadTouch0;
+            state.TrackPadTouch1 = TrackPadTouch1;
+            state.SASteeringWheelEmulationUnit = SASteeringWheelEmulationUnit;
         }
 
         public void calculateStickAngles()
         {
-            double lsangle = Math.Atan2(-(LY - 127), (LX - 127));
+            double lsangle = Math.Atan2(-(LY - 128), (LX - 128));
             LSAngleRad = lsangle;
             lsangle = (lsangle >= 0 ? lsangle : (2 * Math.PI + lsangle)) * 180 / Math.PI;
             LSAngle = lsangle;
             LXUnit = Math.Abs(Math.Cos(LSAngleRad));
             LYUnit = Math.Abs(Math.Sin(LSAngleRad));
 
-            double rsangle = Math.Atan2(-(RY - 127), (RX - 127));
+            double rsangle = Math.Atan2(-(RY - 128), (RX - 128));
             RSAngleRad = rsangle;
             rsangle = (rsangle >= 0 ? rsangle : (2 * Math.PI + rsangle)) * 180 / Math.PI;
             RSAngle = rsangle;
@@ -172,17 +205,17 @@ namespace DS4Windows
         public void rotateLSCoordinates(double rotation)
         {
             double sinAngle = Math.Sin(rotation), cosAngle = Math.Cos(rotation);
-            double tempLX = LX - 127.5, tempLY = LY - 127.5;
-            LX = (Byte)(Global.Clamp(-127.5, (tempLX * cosAngle - tempLY * sinAngle), 127.5) + 127.5);
-            LY = (Byte)(Global.Clamp(-127.5, (tempLX * sinAngle + tempLY * cosAngle), 127.5) + 127.5);
+            double tempLX = LX - 128.0, tempLY = LY - 128.0;
+            LX = (Byte)(Global.Clamp(-128.0, (tempLX * cosAngle - tempLY * sinAngle), 127.0) + 128.0);
+            LY = (Byte)(Global.Clamp(-128.0, (tempLX * sinAngle + tempLY * cosAngle), 127.0) + 128.0);
         }
 
         public void rotateRSCoordinates(double rotation)
         {
             double sinAngle = Math.Sin(rotation), cosAngle = Math.Cos(rotation);
-            double tempRX = RX - 127.5, tempRY = RY - 127.5;
-            RX = (Byte)(Global.Clamp(-127.5, (tempRX * cosAngle - tempRY * sinAngle), 127.5) + 127.5);
-            RY = (Byte)(Global.Clamp(-127.5, (tempRX * sinAngle + tempRY * cosAngle), 127.5) + 127.5);
+            double tempRX = RX - 128.0, tempRY = RY - 128.0;
+            RX = (Byte)(Global.Clamp(-128.0, (tempRX * cosAngle - tempRY * sinAngle), 127.0) + 128.0);
+            RY = (Byte)(Global.Clamp(-128.0, (tempRX * sinAngle + tempRY * cosAngle), 127.0) + 128.0);
         }
     }
 }

@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Windows.Forms;
 
 namespace DS4Windows
 {
+    [SuppressUnmanagedCodeSecurity]
     [System.ComponentModel.DesignerCategory("")]
     public class AdvancedColorDialog : ColorDialog
     {
@@ -130,7 +132,7 @@ namespace DS4Windows
         private const int WM_INITDIALOG = 0x0110;
 
         private List<ApiWindow> EditWindows = null;
-        public delegate void ColorUpdateHandler(object sender, EventArgs e);
+        public delegate void ColorUpdateHandler(Color colValue, EventArgs e);
         public event ColorUpdateHandler OnUpdateColor;
 
         [DllImport("user32.dll", CharSet = CharSet.Ansi, SetLastError = true, ExactSpelling = true)]

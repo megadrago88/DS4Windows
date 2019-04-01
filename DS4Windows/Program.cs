@@ -2,7 +2,7 @@
 using System.Windows.Forms;
 using System.Threading;
 using System.Runtime.InteropServices;
-using System.Diagnostics;
+using Process = System.Diagnostics.Process;
 using System.ComponentModel;
 using System.Globalization;
 using Microsoft.Win32.TaskScheduler;
@@ -11,10 +11,6 @@ namespace DS4Windows
 {
     static class Program
     {
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool SetForegroundWindow(IntPtr hWnd);
-
         // Add "global\" in front of the EventName, then only one instance is allowed on the
         // whole system, including other users. But the application can not be brought
         // into view, of course. 
@@ -24,6 +20,7 @@ namespace DS4Windows
         public static ControlService rootHub;
         private static Thread testThread;
         private static Thread controlThread;
+        private static Form ds4form;
 
         /// <summary>
         /// The main entry point for the application.
@@ -71,27 +68,34 @@ namespace DS4Windows
                 }
             }
 
-            System.Runtime.GCSettings.LatencyMode = System.Runtime.GCLatencyMode.LowLatency;
-
             try
             {
-                Process.GetCurrentProcess().PriorityClass = 
-                    ProcessPriorityClass.High;
+                Process.GetCurrentProcess().PriorityClass =
+                    System.Diagnostics.ProcessPriorityClass.High;
             }
-            catch
-            {
-                // Ignore problems raising the priority.
-            }
+            catch { } // Ignore problems raising the priority.
+
+            // Force Normal IO Priority
+            IntPtr ioPrio = new IntPtr(2);
+            Util.NtSetInformationProcess(Process.GetCurrentProcess().Handle,
+                Util.PROCESS_INFORMATION_CLASS.ProcessIoPriority, ref ioPrio, 4);
+
+            // Force Normal Page Priority
+            IntPtr pagePrio = new IntPtr(5);
+            Util.NtSetInformationProcess(Process.GetCurrentProcess().Handle,
+                Util.PROCESS_INFORMATION_CLASS.ProcessPagePriority, ref pagePrio, 4);
 
             try
             {
                 // another instance is already running if OpenExsting succeeds.
-                threadComEvent = EventWaitHandle.OpenExisting(SingleAppComEventName);
+                threadComEvent = EventWaitHandle.OpenExisting(SingleAppComEventName,
+                    System.Security.AccessControl.EventWaitHandleRights.Synchronize |
+                    System.Security.AccessControl.EventWaitHandleRights.Modify);
                 threadComEvent.Set();  // signal the other instance.
                 threadComEvent.Close();
                 return;    // return immediatly.
             }
-            catch { /* don't care about errors */     }
+            catch { /* don't care about errors */ }
 
             // Create the Event handle
             threadComEvent = new EventWaitHandle(false, EventResetMode.ManualReset, SingleAppComEventName);
@@ -102,12 +106,11 @@ namespace DS4Windows
 
             //if (mutex.WaitOne(TimeSpan.Zero, true))
             //{
-                createControlService();
-                rootHub.createHidGuardKey();
+            createControlService();
                 //rootHub = new ControlService();
                 Application.EnableVisualStyles();
-                Application.Run(new DS4Form(args));
-                rootHub.removeHidGuardKey();
+                ds4form = new DS4Form(args);
+                Application.Run();
             //mutex.ReleaseMutex();
             //}
 
@@ -130,29 +133,26 @@ namespace DS4Windows
 
         private static void CreateTempWorkerThread()
         {
-            testThread = new Thread(singleAppComThread_DoWork);
+            testThread = new Thread(SingleAppComThread_DoWork);
             testThread.Priority = ThreadPriority.Lowest;
             testThread.IsBackground = true;
             testThread.Start();
         }
 
-        private static void singleAppComThread_DoWork()
+        private static void SingleAppComThread_DoWork()
         {
-            WaitHandle[] waitHandles = new WaitHandle[] { threadComEvent };
-
             while (!exitComThread)
             {
-                // check every second for a signal.
-                if (WaitHandle.WaitAny(waitHandles) == 0)
+                // check for a signal.
+                if (threadComEvent.WaitOne())
                 {
                     threadComEvent.Reset();
                     // The user tried to start another instance. We can't allow that, 
                     // so bring the other instance back into view and enable that one. 
                     // That form is created in another thread, so we need some thread sync magic.
-                    if (!exitComThread && Application.OpenForms.Count > 0)
+                    if (!exitComThread)
                     {
-                        Form mainForm = Application.OpenForms[0];
-                        mainForm?.Invoke(new SetFormVisableDelegate(ThreadFormVisable), mainForm);
+                        ds4form?.Invoke(new SetFormVisableDelegate(ThreadFormVisable), ds4form);
                     }
                 }
             }
@@ -164,26 +164,15 @@ namespace DS4Windows
         /// </summary>
         /// <param name="frm"></param>
         private delegate void SetFormVisableDelegate(Form frm);
-        static private void ThreadFormVisable(Form frm)
+        private static void ThreadFormVisable(Form frm)
         {
-            if (frm != null)
+            if (frm is DS4Form)
             {
-                if (frm is DS4Form)
-                {
-                    // display the form and bring to foreground.
-                    frm.WindowState = FormWindowState.Normal;
-                    frm.Focus();
-                }
-                else
-                {
-                    WinProgs wp = (WinProgs)frm;
-                    wp.form.mAllowVisible = true;
-                    wp.ShowMainWindow();
-                    SetForegroundWindow(wp.form.Handle);
-                }
+                // display the form and bring to foreground.
+                DS4Form temp = (DS4Form)frm;
+                temp.Show();
+                temp.WindowState = FormWindowState.Normal;
             }
-
-            SetForegroundWindow(frm.Handle);
         }
     }
 }

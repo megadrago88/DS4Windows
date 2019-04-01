@@ -23,6 +23,7 @@ namespace DS4Windows
         public bool priorLeftDown, priorRightDown, priorUpperDown, priorMultiDown;
         protected DS4Controls pushed = DS4Controls.None;
         protected Mapping.Click clicked = Mapping.Click.None;
+        public int CursorGyroDead { get => cursor.GyroCursorDeadZone; set => cursor.GyroCursorDeadZone = value; }
 
         internal const int TRACKBALL_INIT_FICTION = 10;
         internal const int TRACKBALL_MASS = 45;
@@ -57,31 +58,62 @@ namespace DS4Windows
             trackballAccel = TRACKBALL_RADIUS * friction / TRACKBALL_INERTIA;
         }
 
-        bool triggeractivated = false;
-        bool useReverseRatchet = false;
+        public void ResetToggleGyroM()
+        {
+            currentToggleGyroM = false;
+        }
 
-        public virtual void sixaxisMoved(object sender, SixAxisEventArgs arg)
+        bool triggeractivated = false;
+        bool previousTriggerActivated = false;
+        bool useReverseRatchet = false;
+        bool toggleGyroMouse = true;
+        public bool ToggleGyroMouse { get => toggleGyroMouse;
+            set { toggleGyroMouse = value; ResetToggleGyroM(); } }
+        bool currentToggleGyroM = false;
+
+        public virtual void sixaxisMoved(DS4SixAxis sender, SixAxisEventArgs arg)
         {
             if (Global.isUsingSAforMouse(deviceNum) && Global.getGyroSensitivity(deviceNum) > 0)
             {
                 s = dev.getCurrentStateRef();
 
-                triggeractivated = true;
                 useReverseRatchet = Global.getGyroTriggerTurns(deviceNum);
                 int i = 0;
                 string[] ss = Global.getSATriggers(deviceNum).Split(',');
+                bool andCond = Global.getSATriggerCond(deviceNum);
+                triggeractivated = andCond ? true : false;
                 if (!string.IsNullOrEmpty(ss[0]))
                 {
                     string s = string.Empty;
-                    for (int index = 0, arlen = ss.Length;
-                        triggeractivated && index < arlen; index++)
+                    for (int index = 0, arlen = ss.Length; index < arlen; index++)
                     {
                         s = ss[index];
-                        if (!(int.TryParse(s, out i) && getDS4ControlsByName(i)))
+                        if (andCond && !(int.TryParse(s, out i) && getDS4ControlsByName(i)))
                         {
                             triggeractivated = false;
+                            break;
+                        }
+                        else if (!andCond && int.TryParse(s, out i) && getDS4ControlsByName(i))
+                        {
+                            triggeractivated = true;
+                            break;
                         }
                     }
+                }
+
+                if (toggleGyroMouse)
+                {
+                    if (triggeractivated && triggeractivated != previousTriggerActivated)
+                    {
+                        currentToggleGyroM = !currentToggleGyroM;
+                    }
+
+                    previousTriggerActivated = triggeractivated;
+                    triggeractivated = currentToggleGyroM;
+                }
+                else
+                {
+                    previousTriggerActivated = triggeractivated;
                 }
 
                 if (useReverseRatchet && triggeractivated)
@@ -103,9 +135,9 @@ namespace DS4Windows
                 case 2: return s.Square;
                 case 3: return s.Triangle;
                 case 4: return s.L1;
-                case 5: return s.L2 > 127;
+                case 5: return s.L2 > 128;
                 case 6: return s.R1;
-                case 7: return s.R2 > 127;
+                case 7: return s.R2 > 128;
                 case 8: return s.DpadUp;
                 case 9: return s.DpadDown;
                 case 10: return s.DpadLeft;
@@ -124,7 +156,7 @@ namespace DS4Windows
         }
 
         private bool tempBool = false;
-        public virtual void touchesMoved(object sender, TouchpadEventArgs arg)
+        public virtual void touchesMoved(DS4Touchpad sender, TouchpadEventArgs arg)
         {
             s = dev.getCurrentStateRef();
 
@@ -178,7 +210,7 @@ namespace DS4Windows
             synthesizeMouseButtons();
         }
 
-        public virtual void touchesBegan(object sender, TouchpadEventArgs arg)
+        public virtual void touchesBegan(DS4Touchpad sender, TouchpadEventArgs arg)
         {
             if (!Global.UseTPforControls[deviceNum])
             {
@@ -211,7 +243,7 @@ namespace DS4Windows
             synthesizeMouseButtons();
         }
 
-        public virtual void touchesEnded(object sender, TouchpadEventArgs arg)
+        public virtual void touchesEnded(DS4Touchpad sender, TouchpadEventArgs arg)
         {
             s = dev.getCurrentStateRef();
             slideright = slideleft = false;
@@ -343,7 +375,7 @@ namespace DS4Windows
             return t.hwX >= 1920 * 2 / 5;
         }
 
-        public virtual void touchUnchanged(object sender, EventArgs unused)
+        public virtual void touchUnchanged(DS4Touchpad sender, EventArgs unused)
         {
             s = dev.getCurrentStateRef();
 
@@ -413,6 +445,7 @@ namespace DS4Windows
         }
 
         public bool dragging, dragging2;
+
         private void synthesizeMouseButtons()
         {
             if (Global.GetDS4Action(deviceNum, DS4Controls.TouchLeft, false) == null && leftDown)
@@ -458,17 +491,16 @@ namespace DS4Windows
             }
         }
 
-        public virtual void touchButtonUp(object sender, TouchpadEventArgs arg)
+        public virtual void touchButtonUp(DS4Touchpad sender, TouchpadEventArgs arg)
         {
             pushed = DS4Controls.None;
             upperDown = leftDown = rightDown = multiDown = false;
-            dev.setRumble(0, 0);
             s = dev.getCurrentStateRef();
             if (s.Touch1 || s.Touch2)
                 synthesizeMouseButtons();
         }
 
-        public virtual void touchButtonDown(object sender, TouchpadEventArgs arg)
+        public virtual void touchButtonDown(DS4Touchpad sender, TouchpadEventArgs arg)
         {
             if (arg.touches == null)
                 upperDown = true;

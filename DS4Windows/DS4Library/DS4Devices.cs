@@ -40,8 +40,10 @@ namespace DS4Windows
             new VidPidInfo(SONY_VID, 0x09CC),
             new VidPidInfo(RAZER_VID, 0x1000),
             new VidPidInfo(NACON_VID, 0x0D01),
+            new VidPidInfo(NACON_VID, 0x0D02),
             new VidPidInfo(HORI_VID, 0x00EE),    // Hori PS4 Mini Wired Gamepad
-            new VidPidInfo(0x7545, 0x0104)
+            new VidPidInfo(0x7545, 0x0104),
+            new VidPidInfo(0x2E95, 0x7725), // Scuf Vantage gamepad
         };
 
         private static string devicePathToInstanceId(string devicePath)
@@ -103,7 +105,7 @@ namespace DS4Windows
                                     startInfo.Arguments = "re-enabledevice " + devicePathToInstanceId(hDevice.DevicePath);
                                     Process child = Process.Start(startInfo);
 
-                                    if (!child.WaitForExit(5000))
+                                    if (!child.WaitForExit(30000))
                                     {
                                         child.Kill();
                                     }
@@ -177,9 +179,11 @@ namespace DS4Windows
             {
                 IEnumerable<DS4Device> devices = getDS4Controllers();
                 //foreach (DS4Device device in devices)
-                for (int i = 0, devCount = devices.Count(); i < devCount; i++)
+                //for (int i = 0, devCount = devices.Count(); i < devCount; i++)
+                for (var devEnum = devices.GetEnumerator(); devEnum.MoveNext();)
                 {
-                    DS4Device device = devices.ElementAt(i);
+                    DS4Device device = devEnum.Current;
+                    //DS4Device device = devices.ElementAt(i);
                     device.StopUpdate();
                     //device.runRemoval();
                     device.HidDevice.CloseDevice();
@@ -233,7 +237,8 @@ namespace DS4Windows
                             deviceSerials.Add(serial);
                         }
 
-                        device.refreshCalibration();
+                        if (device.ShouldRunCalib())
+                            device.RefreshCalibration();
                     }
                 }
             }
@@ -245,9 +250,11 @@ namespace DS4Windows
             if (disabledDevCount > 0)
             {
                 List<HidDevice> disabledDevList = new List<HidDevice>();
-                for (int i = 0, arlen = disabledDevCount; i < arlen; i++)
+                for (var devEnum = DisabledDevices.GetEnumerator(); devEnum.MoveNext();)
+                //for (int i = 0, arlen = disabledDevCount; i < arlen; i++)
                 {
-                    HidDevice tempDev = DisabledDevices.ElementAt(i);
+                    //HidDevice tempDev = DisabledDevices.ElementAt(i);
+                    HidDevice tempDev = devEnum.Current;
                     if (tempDev != null)
                     {
                         if (tempDev.IsOpen && tempDev.IsConnected)

@@ -150,10 +150,10 @@
             this.cBUpdateTime = new System.Windows.Forms.ComboBox();
             this.lbCheckEvery = new System.Windows.Forms.Label();
             this.nUDUpdateTime = new System.Windows.Forms.NumericUpDown();
-            this.pnlXIPorts = new System.Windows.Forms.Panel();
-            this.lbUseXIPorts = new System.Windows.Forms.Label();
-            this.nUDXIPorts = new System.Windows.Forms.NumericUpDown();
-            this.lbLastXIPort = new System.Windows.Forms.Label();
+            this.panel4 = new System.Windows.Forms.Panel();
+            this.label2 = new System.Windows.Forms.Label();
+            this.ckUdpServ = new System.Windows.Forms.CheckBox();
+            this.nUDUdpPortNum = new System.Windows.Forms.NumericUpDown();
             this.languagePackComboBox1 = new DS4Windows.DS4Forms.LanguagePackComboBox();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.linkProfiles = new System.Windows.Forms.LinkLabel();
@@ -161,10 +161,6 @@
             this.linkUninstall = new System.Windows.Forms.LinkLabel();
             this.linkSetup = new System.Windows.Forms.LinkLabel();
             this.lLBUpdate = new System.Windows.Forms.LinkLabel();
-            this.linkSplitLabel = new System.Windows.Forms.Label();
-            this.hidGuardWhiteList = new System.Windows.Forms.LinkLabel();
-            this.clrHidGuardWlistLinkLabel = new System.Windows.Forms.LinkLabel();
-            this.hidGuardRegLinkLabel = new System.Windows.Forms.LinkLabel();
             this.tabLog = new System.Windows.Forms.TabPage();
             this.panel3 = new System.Windows.Forms.Panel();
             this.exportLogTxtBtn = new System.Windows.Forms.Button();
@@ -197,8 +193,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.nUDLatency)).BeginInit();
             this.pNUpdate.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nUDUpdateTime)).BeginInit();
-            this.pnlXIPorts.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nUDXIPorts)).BeginInit();
+            this.panel4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nUDUdpPortNum)).BeginInit();
             this.flowLayoutPanel1.SuspendLayout();
             this.tabLog.SuspendLayout();
             this.panel3.SuspendLayout();
@@ -730,7 +726,6 @@
             this.lBProfiles.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.lBProfiles.ContextMenuStrip = this.cMProfile;
             resources.ApplyResources(this.lBProfiles, "lBProfiles");
-            this.lBProfiles.FormattingEnabled = true;
             this.lBProfiles.Name = "lBProfiles";
             this.lBProfiles.SelectedIndexChanged += new System.EventHandler(this.lBProfiles_SelectedIndexChanged);
             this.lBProfiles.KeyDown += new System.Windows.Forms.KeyEventHandler(this.lBProfiles_KeyDown);
@@ -957,7 +952,7 @@
             this.fLPSettings.Controls.Add(this.cBUseWhiteIcon);
             this.fLPSettings.Controls.Add(this.cBUpdate);
             this.fLPSettings.Controls.Add(this.pNUpdate);
-            this.fLPSettings.Controls.Add(this.pnlXIPorts);
+            this.fLPSettings.Controls.Add(this.panel4);
             this.fLPSettings.Controls.Add(this.languagePackComboBox1);
             this.fLPSettings.Controls.Add(this.flowLayoutPanel1);
             this.fLPSettings.Name = "fLPSettings";
@@ -1168,66 +1163,64 @@
             this.nUDUpdateTime.Name = "nUDUpdateTime";
             this.nUDUpdateTime.ValueChanged += new System.EventHandler(this.nUDUpdateTime_ValueChanged);
             // 
-            // pnlXIPorts
+            // panel4
             // 
-            this.pnlXIPorts.Controls.Add(this.lbUseXIPorts);
-            this.pnlXIPorts.Controls.Add(this.nUDXIPorts);
-            this.pnlXIPorts.Controls.Add(this.lbLastXIPort);
-            resources.ApplyResources(this.pnlXIPorts, "pnlXIPorts");
-            this.pnlXIPorts.Name = "pnlXIPorts";
+            this.panel4.Controls.Add(this.label2);
+            this.panel4.Controls.Add(this.ckUdpServ);
+            this.panel4.Controls.Add(this.nUDUdpPortNum);
+            resources.ApplyResources(this.panel4, "panel4");
+            this.panel4.Name = "panel4";
             // 
-            // lbUseXIPorts
+            // label2
             // 
-            resources.ApplyResources(this.lbUseXIPorts, "lbUseXIPorts");
-            this.lbUseXIPorts.Name = "lbUseXIPorts";
+            resources.ApplyResources(this.label2, "label2");
+            this.label2.Name = "label2";
             // 
-            // nUDXIPorts
+            // ckUdpServ
             // 
-            resources.ApplyResources(this.nUDXIPorts, "nUDXIPorts");
-            this.nUDXIPorts.Maximum = new decimal(new int[] {
-            11,
+            resources.ApplyResources(this.ckUdpServ, "ckUdpServ");
+            this.ckUdpServ.Name = "ckUdpServ";
+            this.ckUdpServ.UseVisualStyleBackColor = true;
+            // 
+            // nUDUdpPortNum
+            // 
+            resources.ApplyResources(this.nUDUdpPortNum, "nUDUdpPortNum");
+            this.nUDUdpPortNum.Maximum = new decimal(new int[] {
+            65535,
             0,
             0,
             0});
-            this.nUDXIPorts.Minimum = new decimal(new int[] {
-            1,
+            this.nUDUdpPortNum.Minimum = new decimal(new int[] {
+            1024,
             0,
             0,
             0});
-            this.nUDXIPorts.Name = "nUDXIPorts";
-            this.nUDXIPorts.Value = new decimal(new int[] {
-            1,
+            this.nUDUdpPortNum.Name = "nUDUdpPortNum";
+            this.nUDUdpPortNum.Value = new decimal(new int[] {
+            26760,
             0,
             0,
             0});
-            this.nUDXIPorts.ValueChanged += new System.EventHandler(this.nUDXIPorts_ValueChanged);
-            this.nUDXIPorts.Enter += new System.EventHandler(this.nUDXIPorts_Enter);
-            this.nUDXIPorts.Leave += new System.EventHandler(this.nUDXIPorts_Leave);
-            // 
-            // lbLastXIPort
-            // 
-            resources.ApplyResources(this.lbLastXIPort, "lbLastXIPort");
-            this.lbLastXIPort.Name = "lbLastXIPort";
             // 
             // languagePackComboBox1
             // 
+            this.languagePackComboBox1.AutoValidate = System.Windows.Forms.AutoValidate.Disable;
+            this.languagePackComboBox1.BackColor = System.Drawing.SystemColors.Window;
+            this.languagePackComboBox1.CausesValidation = false;
             resources.ApplyResources(this.languagePackComboBox1, "languagePackComboBox1");
             this.languagePackComboBox1.Name = "languagePackComboBox1";
             this.languagePackComboBox1.SelectedValueChanged += new System.EventHandler(this.languagePackComboBox1_SelectedValueChanged);
             // 
             // flowLayoutPanel1
             // 
-            resources.ApplyResources(this.flowLayoutPanel1, "flowLayoutPanel1");
+            this.flowLayoutPanel1.BackColor = System.Drawing.SystemColors.Window;
             this.flowLayoutPanel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.flowLayoutPanel1.Controls.Add(this.linkProfiles);
             this.flowLayoutPanel1.Controls.Add(this.lnkControllers);
             this.flowLayoutPanel1.Controls.Add(this.linkUninstall);
             this.flowLayoutPanel1.Controls.Add(this.linkSetup);
             this.flowLayoutPanel1.Controls.Add(this.lLBUpdate);
-            this.flowLayoutPanel1.Controls.Add(this.linkSplitLabel);
-            this.flowLayoutPanel1.Controls.Add(this.hidGuardWhiteList);
-            this.flowLayoutPanel1.Controls.Add(this.clrHidGuardWlistLinkLabel);
-            this.flowLayoutPanel1.Controls.Add(this.hidGuardRegLinkLabel);
+            resources.ApplyResources(this.flowLayoutPanel1, "flowLayoutPanel1");
             this.flowLayoutPanel1.ForeColor = System.Drawing.SystemColors.ControlText;
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
             // 
@@ -1265,35 +1258,6 @@
             this.lLBUpdate.Name = "lLBUpdate";
             this.lLBUpdate.TabStop = true;
             this.lLBUpdate.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lLBUpdate_LinkClicked);
-            // 
-            // linkSplitLabel
-            // 
-            resources.ApplyResources(this.linkSplitLabel, "linkSplitLabel");
-            this.linkSplitLabel.BackColor = System.Drawing.SystemColors.ActiveBorder;
-            this.linkSplitLabel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.linkSplitLabel.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.linkSplitLabel.Name = "linkSplitLabel";
-            // 
-            // hidGuardWhiteList
-            // 
-            resources.ApplyResources(this.hidGuardWhiteList, "hidGuardWhiteList");
-            this.hidGuardWhiteList.Name = "hidGuardWhiteList";
-            this.hidGuardWhiteList.TabStop = true;
-            this.hidGuardWhiteList.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.HidGuardWhiteList_LinkClicked);
-            // 
-            // clrHidGuardWlistLinkLabel
-            // 
-            resources.ApplyResources(this.clrHidGuardWlistLinkLabel, "clrHidGuardWlistLinkLabel");
-            this.clrHidGuardWlistLinkLabel.Name = "clrHidGuardWlistLinkLabel";
-            this.clrHidGuardWlistLinkLabel.TabStop = true;
-            this.clrHidGuardWlistLinkLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.ClrHidGuardWlistLinkLabel_LinkClicked);
-            // 
-            // hidGuardRegLinkLabel
-            // 
-            resources.ApplyResources(this.hidGuardRegLinkLabel, "hidGuardRegLinkLabel");
-            this.hidGuardRegLinkLabel.Name = "hidGuardRegLinkLabel";
-            this.hidGuardRegLinkLabel.TabStop = true;
-            this.hidGuardRegLinkLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.HidGuardRegLinkLabel_LinkClicked);
             // 
             // tabLog
             // 
@@ -1355,7 +1319,6 @@
             // 
             // DS4Form
             // 
-            this.AllowDrop = true;
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.BackColor = System.Drawing.SystemColors.Window;
@@ -1363,7 +1326,6 @@
             this.Controls.Add(this.pnlButton);
             this.Name = "DS4Form";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ScpForm_Closing);
-            this.Resize += new System.EventHandler(this.Form_Resize);
             this.pnlButton.ResumeLayout(false);
             this.pnlButton.PerformLayout();
             this.cMTaskbar.ResumeLayout(false);
@@ -1396,9 +1358,9 @@
             this.pNUpdate.ResumeLayout(false);
             this.pNUpdate.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nUDUpdateTime)).EndInit();
-            this.pnlXIPorts.ResumeLayout(false);
-            this.pnlXIPorts.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nUDXIPorts)).EndInit();
+            this.panel4.ResumeLayout(false);
+            this.panel4.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nUDUdpPortNum)).EndInit();
             this.flowLayoutPanel1.ResumeLayout(false);
             this.flowLayoutPanel1.PerformLayout();
             this.tabLog.ResumeLayout(false);
@@ -1503,10 +1465,6 @@
         private System.Windows.Forms.ToolStripMenuItem startToolStripMenuItem;
         public System.Windows.Forms.Label lbLastMessage;
         private System.Windows.Forms.CheckBox cBQuickCharge;
-        private System.Windows.Forms.Panel pnlXIPorts;
-        private System.Windows.Forms.Label lbUseXIPorts;
-        private System.Windows.Forms.NumericUpDown nUDXIPorts;
-        private System.Windows.Forms.Label lbLastXIPort;
         public System.Windows.Forms.ListBox lBProfiles;
         private System.Windows.Forms.CheckBox cBCloseMini;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
@@ -1543,10 +1501,6 @@
         private System.Windows.Forms.Button exportLogTxtBtn;
         private System.Windows.Forms.Button btnClear;
         private DS4Forms.LanguagePackComboBox languagePackComboBox1;
-        private System.Windows.Forms.LinkLabel hidGuardWhiteList;
-        private System.Windows.Forms.LinkLabel clrHidGuardWlistLinkLabel;
-        private System.Windows.Forms.LinkLabel hidGuardRegLinkLabel;
-        private System.Windows.Forms.Label linkSplitLabel;
         private System.Windows.Forms.ToolStripMenuItem openProgramFolderToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripMenuItem disconToolStripMenuItem;
@@ -1555,6 +1509,10 @@
         private System.Windows.Forms.ToolStripMenuItem discon3ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem discon4ToolStripMenuItem;
         private System.Windows.Forms.CheckBox mintoTaskCheckBox;
+        private System.Windows.Forms.Panel panel4;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.CheckBox ckUdpServ;
+        private System.Windows.Forms.NumericUpDown nUDUdpPortNum;
         //private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
     }
 }
